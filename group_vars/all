@@ -1,0 +1,10 @@
+---
+mysql_host: 10.0.2.15
+mysql_user: root
+mysql_root_password: "{{ lookup('password', inventory_dir + '/creds/mysql_root_passwd length=8') }}"
+
+rabbitmq_openstack_user_name: openstack
+rabbitmq_openstack_user_password: "{{ lookup('password', inventory_dir + '/creds/rabbitmq_openstack_user_passwd length=8') }}"
+
+keystone_user_name: keystone
+keystone_user_password: "{{ lookup('password', inventory_dir + '/creds/keystone_user_passwd length=8') }}"

@@ -1,0 +1,66 @@
+---
+- name: Controller installation
+  hosts: openstack
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Install chrony
+      apt: name=chrony state=present
+
+    - name: Check if service chrony started
+      service: name=chrony enabled=yes
+
+    - name: Adding Openstack Liberty packages
+      apt: name={{ item }} state=present
+      with_items:
+        - software-properties-common
+        - python-software-properties
+
+    - name: Restart and Upgrade apt
+      apt: upgrade=dist
+
+    - name: Installing Openstack client
+      apt: name=python-openstackclient state=present
+
+    - name: Installing Database
+      apt: name={{ item }} state=present
+      with_items:
+        - mariadb-server
+        - python-mysqldb
+
+    - name: update mysql root password for all root accounts
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        password: "{{ mysql_root_password }}"
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ mysql_root_password }}"
+        check_implicit_admin: yes
+        priv: "*.*:ALL,GRANT"
+      with_items:
+        - "{{ ansible_hostname }}"
+        - "{{ mysql_host }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+
+    - name: Configuration of MySQL
+      template: src=../conf/controller/mysqldb/my.cnf dest=/etc/mysql/my.cnf
+      notify: restart mysql
+
+    - name: Install RabbitMQ Server
+      apt: name=rabbitmq-server state=present
+
+    - name: Create rabbitmq User
+      rabbitmq_user:
+        user: "{{ rabbitmq_openstack_user_name }}"
+        password: "{{ rabbitmq_openstack_user_password}}"
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+        state: present
+
+  handlers:
+    - name: restart mysql
+      service: name=mysql state=restarted

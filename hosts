@@ -1,0 +1,5 @@
+[openstack]
+controller	ansible_host=os-cont-01
+
+#[controller]
+#controller	ansible_host=127.0.0.1
