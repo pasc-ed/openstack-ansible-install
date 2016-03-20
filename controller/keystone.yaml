@@ -23,6 +23,20 @@
         priv: "{{ keystone_user_name}}.*:ALL,GRANT"
         state: present
 
-  handlers:
-    - name: restart mysql
-      service: name=mysql state=restarted
+    - name: Prevent keystone to start automatically after installation
+      command: "echo manual > /etc/init/keystone.override"
+
+    - name: Install keystone
+      apt: name=keystone state=present
+
+    - name: Install Apache2
+      apt: name=apache2 state=present
+
+    - name: Install libapache2-mod-wsgi
+      apt: name=libapache2-mod-wsgi state=present
+
+    - name: Install memcached
+      apt: name=memcached state=present
+
+    - name: Install python-memcache
+      apt: name=python-memcache state=present
